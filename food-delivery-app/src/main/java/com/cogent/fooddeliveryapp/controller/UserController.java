@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -86,7 +87,7 @@ public class UserController {
 		
 		user.setAddresses(addresses);
 		user.setEmail(signupRequest.getEmail());
-		user.setName(signupRequest.getName());
+		user.setUsername(signupRequest.getName());
 		user.setPassword(signupRequest.getPassword());
 		user.setRoles(roles);
 		user.setDoj(signupRequest.getDoj());
@@ -103,7 +104,7 @@ public class UserController {
 		list.forEach(e ->{
 			UserResponse userResponse = new UserResponse();
 			userResponse.setEmail(e.getEmail());
-			userResponse.setName(e.getName());
+			userResponse.setName(e.getUsername());
 			userResponse.setDoj(e.getDoj());
 			
 			Set<String> roles = new HashSet<>();
@@ -138,7 +139,7 @@ public class UserController {
         //DTO ===> UserResponse()
 		UserResponse userResponse = new UserResponse();
 		userResponse.setEmail(user.getEmail());
-		userResponse.setName(user.getName());
+		userResponse.setName(user.getUsername());
 		userResponse.setDoj(user.getDoj());
 		
 		Set<String> roles = new HashSet<>();
@@ -159,6 +160,50 @@ public class UserController {
 		});
 		userResponse.setAddress(addresses);
 		return ResponseEntity.status(200).body(userResponse);
+	}
+	
+	@PutMapping("/{id}")
+	public ResponseEntity<?> updateEmployee(@RequestBody User newUser, @PathVariable("id") Long id) {
+		
+		
+		User user1 = userService.getUserById(id).map(user -> {
+			user.setEmail(newUser.getEmail());
+			user.setPassword(newUser.getPassword());
+			user.setAddresses(user.getAddresses());
+			return userService.addUser(user);
+		}).orElseThrow(()-> new NoDataFoundException("data are not available"));
+		return ResponseEntity.status(200).body(user1);
+		
+//		if (userService.existsById(id)) {
+//			// success part
+//			// if exists then delete it
+//			User user = userService.getUserById(id).orElseThrow(()-> new NoDataFoundException("data are not available"));
+//			UserResponse userResponse = new UserResponse();
+//			userResponse.setEmail(newUser.getEmail());
+//			userResponse.setName(newUser.getName());
+//			userResponse.setDoj(newUser.getDoj());
+//
+//			Set<com.cogent.fooddeliveryapp.payload.request.Address> addresses = new HashSet<>();
+//			newUser.getAddresses().forEach(e4->{
+//				com.cogent.fooddeliveryapp.payload.request.Address address2 = new com.cogent.fooddeliveryapp.payload.request.Address();
+//				address2.setHouseNumber(e4.getHouseNumber());
+//				address2.setCity(e4.getCity());
+//				address2.setCountry(e4.getCountry());
+//				address2.setState(e4.getState());
+//				address2.setStreet(e4.getStreet());
+//				address2.setZip(e4.getZip());
+//				addresses.add(address2);
+//			});
+//			userResponse.setAddress(addresses);
+//			
+//			return ResponseEntity.status(200).body(userResponse);
+//		} 
+//		else {
+//			// failure part
+//			// if not then throw exception
+//			throw new NoDataFoundException("record not found");
+//		}
+		
 	}
 	
 	@DeleteMapping("/{id}") // id value will pass through url

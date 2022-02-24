@@ -8,6 +8,7 @@ import javax.validation.constraints.Min;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +27,7 @@ import com.cogent.fooddeliveryapp.repository.FoodRepository;
 
 
 @RestController // = @Controller + @ResponseBody
-@RequestMapping("/food")
+@RequestMapping("/api/food")
 
 @Validated // difference between @Valid and @Validated
 
@@ -36,7 +37,9 @@ public class FoodController {
 	FoodRepository foodRepository;
 	//private FoodService foodService;
 	
-	@PostMapping(value = "")
+	@PostMapping(value = "/add")
+	@PreAuthorize("hasRole('ADMIN')")
+
 	public ResponseEntity<?> createFood(@Valid @RequestBody Food food){
 		Food food2 = foodRepository.save(food);
 		return ResponseEntity.status(201).body(food2);

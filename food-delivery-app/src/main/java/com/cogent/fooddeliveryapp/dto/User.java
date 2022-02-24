@@ -48,7 +48,7 @@ public class User {
 	
 	private String password;
 	
-	private String name;
+	private String username;
 	
 	@JsonFormat(pattern = "MM-dd-yyyy")
 	private LocalDate doj = LocalDate.now();

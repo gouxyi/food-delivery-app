@@ -1,13 +1,22 @@
 package com.cogent.fooddeliveryapp.advice;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -17,11 +26,16 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import com.cogent.fooddeliveryapp.exception.NoDataFoundException;
 import com.cogent.fooddeliveryapp.exception.NameAlreadyExistsException;
 import com.cogent.fooddeliveryapp.exception.apierror.ApiError;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.cogent.fooddeliveryapp.exception.FoodNotFoundException;
 
 @org.springframework.web.bind.annotation.ControllerAdvice 
 // will handle all exceptions which are thrown by the controller/restcontroller using throws
-public class ControllerAdvice extends ResponseEntityExceptionHandler{
+
+public class ControllerAdvice extends ResponseEntityExceptionHandler implements AuthenticationEntryPoint{
+//public class ControllerAdvice implements AuthenticationEntryPoint{
+	
+	private static final Logger logger = LoggerFactory.getLogger(ControllerAdvice.class);
 	
 	@ExceptionHandler(NoDataFoundException.class) // this is responsible for handling NameAlreadyExistsException.
 	public ResponseEntity<?> NoDataFoundException(NoDataFoundException e){
@@ -43,6 +57,7 @@ public class ControllerAdvice extends ResponseEntityExceptionHandler{
 	}
 	
 	@Override
+	// @ExceptionHandler(MethodArgumentNotValidException.class)
 	// work for @Valid annotation only (Post method)
 	public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
 			HttpHeaders headers, HttpStatus status, WebRequest request){
@@ -74,13 +89,13 @@ public class ControllerAdvice extends ResponseEntityExceptionHandler{
 		return buildResponseEntity(apiError);
 	}
 	
-	//default handle
-	@ExceptionHandler(Exception.class)
-	protected ResponseEntity<?> handleMethodException(Exception e){
-		ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR);
-		apiError.setMessage(e.getMessage());
-		return buildResponseEntity(apiError);
-	}
+//	//default handle
+//	@ExceptionHandler(Exception.class)
+//	protected ResponseEntity<?> handleMethodException(Exception e){
+//		ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR);
+//		apiError.setMessage(e.getMessage());
+//		return buildResponseEntity(apiError);
+//	}
 	
 	@ExceptionHandler(FoodNotFoundException.class)
 	public ResponseEntity<?> FoodNotFoundException(FoodNotFoundException e){
@@ -88,4 +103,25 @@ public class ControllerAdvice extends ResponseEntityExceptionHandler{
 		map.put("message", e.getMessage());
 		return ResponseEntity.badRequest().body(map);
 	}
+
+@Override
+public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+		throws IOException, ServletException {
+    // this response it is of json type
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    // status code as unauthorized 
+    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+    final Map<String, Object> body = new HashMap<>();
+    body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
+    body.put("error", "Unauthorized");
+    body.put("message", authException.getMessage());
+    body.put("path", request.getServletPath());
+
+    final ObjectMapper mapper = new ObjectMapper();
+    mapper.writeValue(response.getOutputStream(), body);
+	
+}
+	
+	
 }
