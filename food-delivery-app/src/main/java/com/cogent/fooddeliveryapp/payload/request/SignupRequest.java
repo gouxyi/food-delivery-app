@@ -23,7 +23,7 @@ public class SignupRequest {
 	@NotBlank
 	private String password;
 	@NotBlank
-	private String name;
+	private String username;
 	@NotEmpty // specifically design for list
 	private Set<Address> address;
 	

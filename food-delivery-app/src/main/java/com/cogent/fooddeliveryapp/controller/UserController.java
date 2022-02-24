@@ -87,7 +87,7 @@ public class UserController {
 		
 		user.setAddresses(addresses);
 		user.setEmail(signupRequest.getEmail());
-		user.setUsername(signupRequest.getName());
+		user.setUsername(signupRequest.getUsername());
 		user.setPassword(signupRequest.getPassword());
 		user.setRoles(roles);
 		user.setDoj(signupRequest.getDoj());
